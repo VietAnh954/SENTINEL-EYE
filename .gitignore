@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# C extensions
+*.obj
+*.o
+*.a
+*.lib
+*.pyd
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*/venv/
+*/.venv/
+*/*//venv/
+*/*/.venv/
+
+# Large Model Weights & Checkpoints (Heavy files)
+*.pt
+*.pth
+*.onnx
+*.engine
+*.bin
+*.tflite
+*.h5
+*.weights
+*.ckpt
+*.safetensors
+
+# PlatformIO & Embedded build directories
+.pio/
+*/.pio/
+*/*/.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+
+# IDEs and editors
+.vscode/
+*/.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & dynamic intrusion capture data
+intrusion_logs/
+*/intrusion_logs/
+*/*/intrusion_logs/
+*.log
+runs/
+*/runs/

@@ -1,0 +1,1242 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sentinel Eye - Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #0a0a1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+      }
+
+      /* Header */
+      .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        padding: 15px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #e94560;
+        box-shadow: 0 2px 20px rgba(233, 69, 96, 0.3);
+      }
+
+      .header h1 {
+        color: #e94560;
+        font-size: 24px;
+        letter-spacing: 3px;
+      }
+
+      .header .subtitle {
+        color: #8899aa;
+        font-size: 12px;
+      }
+
+      .status-bar {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .status-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #555;
+      }
+
+      .status-dot.connected {
+        background: #4ecca3;
+        box-shadow: 0 0 8px #4ecca3;
+      }
+      .status-dot.disconnected {
+        background: #e94560;
+        box-shadow: 0 0 8px #e94560;
+      }
+
+      .person-count-badge {
+        background: #e94560;
+        color: white;
+        padding: 4px 14px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+      }
+
+      .person-count-badge.zero {
+        background: #2a3a5e;
+      }
+
+      /* Main Layout */
+      .main-container {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      /* Video Panel */
+      .video-panel {
+        flex: 1;
+        background: #16213e;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      .video-header {
+        background: #1a1a2e;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #2a3a5e;
+      }
+
+      .video-header h2 {
+        font-size: 16px;
+        color: #4ecca3;
+      }
+
+      .badge-group {
+        display: flex;
+        gap: 8px;
+      }
+
+      .fps-badge {
+        background: #0f3460;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: #4ecca3;
+      }
+
+      .yolo-badge {
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .yolo-badge.on {
+        background: #4ecca3;
+        color: #0a0a1a;
+      }
+      .yolo-badge.off {
+        background: #555;
+        color: #999;
+      }
+
+      .video-container {
+        position: relative;
+        width: 100%;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      .video-container img {
+        width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        display: block;
+      }
+
+      .video-container canvas {
+        position: absolute;
+        /* Dynamic sized relative to object-fit box */
+        cursor: default;
+      }
+
+      .video-container canvas.drawing {
+        cursor: crosshair;
+      }
+
+      .fence-status {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #ff6b6b;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: bold;
+        pointer-events: none;
+        display: none;
+      }
+
+      .fence-status.active {
+        display: block;
+      }
+
+      /* Control Panel */
+      .control-panel {
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .card {
+        background: #16213e;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .card h3 {
+        color: #e94560;
+        font-size: 14px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #2a3a5e;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        font-size: 13px;
+      }
+
+      .info-label {
+        color: #8899aa;
+      }
+      .info-value {
+        color: #4ecca3;
+        font-weight: bold;
+      }
+
+      /* Slider */
+      .slider-container {
+        margin: 8px 0;
+      }
+
+      .slider-container label {
+        font-size: 12px;
+        color: #8899aa;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .slider-container input[type="range"] {
+        width: 100%;
+        margin-top: 4px;
+        accent-color: #e94560;
+      }
+
+      /* Buttons */
+      .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn-row .btn {
+        flex: 1;
+      }
+
+      .btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+        transition: all 0.2s;
+        text-align: center;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn-danger {
+        background: #e94560;
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #d63851;
+      }
+
+      .btn-success {
+        background: #4ecca3;
+        color: #0a0a1a;
+      }
+      .btn-success:hover {
+        background: #3dbb92;
+      }
+
+      .btn-primary {
+        background: #0f3460;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #1a4a80;
+      }
+
+      .btn-warning {
+        background: #f59e0b;
+        color: #0a0a1a;
+      }
+      .btn-warning:hover {
+        background: #d97706;
+      }
+
+      .btn-purple {
+        background: #7c3aed;
+        color: white;
+      }
+      .btn-purple:hover {
+        background: #6d28d9;
+      }
+
+      .btn-outline-danger {
+        background: transparent;
+        color: #e94560;
+        border: 1px solid #e94560;
+      }
+      .btn-outline-danger:hover {
+        background: #e94560;
+        color: white;
+      }
+
+      .btn-teal {
+        background: #0d9488;
+        color: white;
+      }
+      .btn-teal:hover {
+        background: #0f766e;
+      }
+
+      .btn.active-draw {
+        background: #e94560;
+        color: white;
+        animation: pulse-draw 1.5s infinite;
+      }
+
+      @keyframes pulse-draw {
+        0%,
+        100% {
+          box-shadow: 0 0 5px rgba(233, 69, 96, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 20px rgba(233, 69, 96, 0.8);
+        }
+      }
+
+      /* Detection list */
+      .detection-list {
+        max-height: 150px;
+        overflow-y: auto;
+        font-size: 12px;
+      }
+
+      .detection-item {
+        background: #0a0a1a;
+        border-radius: 6px;
+        padding: 6px 10px;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .detection-conf {
+        color: #4ecca3;
+        font-weight: bold;
+      }
+
+      /* Log area */
+      .log-area {
+        background: #0a0a1a;
+        border-radius: 8px;
+        padding: 10px;
+        max-height: 150px;
+        overflow-y: auto;
+        font-family: "Consolas", monospace;
+        font-size: 11px;
+      }
+
+      .log-entry {
+        padding: 2px 0;
+        border-bottom: 1px solid #1a1a2e;
+      }
+      .log-time {
+        color: #555;
+      }
+      .log-info {
+        color: #4ecca3;
+      }
+      .log-warn {
+        color: #f59e0b;
+      }
+      .log-error {
+        color: #e94560;
+      }
+
+      /* Intrusion Alert Banner */
+      .alert-banner {
+        display: none;
+        background: linear-gradient(135deg, #e94560, #b91c1c);
+        color: white;
+        padding: 12px 20px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        animation: alert-flash 0.8s infinite;
+      }
+
+      .alert-banner.active {
+        display: block;
+      }
+
+      @keyframes alert-flash {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+
+      /* Intrusion counter badge */
+      .intrusion-badge {
+        background: #b91c1c;
+        color: white;
+        padding: 4px 14px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+      }
+
+      .intrusion-badge.zero {
+        background: #2a3a5e;
+      }
+
+      /* Log history list */
+      .log-history {
+        max-height: 200px;
+        overflow-y: auto;
+        font-size: 12px;
+      }
+
+      .log-history-item {
+        background: #0a0a1a;
+        border-radius: 6px;
+        padding: 6px 10px;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-left: 3px solid #e94560;
+      }
+
+      .log-history-item .log-h-time {
+        color: #8899aa;
+        font-size: 11px;
+      }
+      .log-history-item .log-h-count {
+        color: #e94560;
+        font-weight: bold;
+      }
+      .log-history-item a {
+        color: #4ecca3;
+        text-decoration: none;
+        font-size: 11px;
+      }
+      .log-history-item a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 900px) {
+        .main-container {
+          flex-direction: column;
+        }
+        .control-panel {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>🛡️ SENTINEL EYE</h1>
+        <div class="subtitle">
+          AI Virtual Fence System — YOLOv8 Human Detection
+        </div>
+      </div>
+      <div class="status-bar">
+        <div class="status-item">
+          <div class="status-dot" id="espStatusDot"></div>
+          <span id="espStatusText">Checking...</span>
+        </div>
+        <div class="status-item">
+          <span>Persons:</span>
+          <span class="person-count-badge zero" id="personBadge">0</span>
+        </div>
+        <div class="status-item">
+          <span>Intruders:</span>
+          <span class="intrusion-badge zero" id="intrusionBadge">0</span>
+        </div>
+        <div class="status-item">
+          <span id="fpsText">-- FPS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intrusion Alert Banner -->
+    <div class="alert-banner" id="alertBanner">
+      🚨 INTRUSION DETECTED — RESTRICTED ZONE BREACHED 🚨
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+      <!-- Video Stream -->
+      <div class="video-panel">
+        <div class="video-header">
+          <h2>📹 Live Camera Feed</h2>
+          <div class="badge-group">
+            <span class="yolo-badge on" id="yoloBadge">YOLO ON</span>
+            <span class="fps-badge" id="fpsBadge">-- FPS</span>
+            <span class="fps-badge" id="detectFpsBadge">Detect: --</span>
+          </div>
+        </div>
+        <div class="video-container">
+          <img id="videoFeed" src="/video_feed" alt="Camera Stream" />
+          <canvas id="fenceCanvas"></canvas>
+          <div class="fence-status" id="fenceStatus">
+            🔶 DRAWING MODE — Click to add points
+          </div>
+        </div>
+      </div>
+
+      <!-- Control Panel -->
+      <div class="control-panel">
+        <!-- System Info -->
+        <div class="card">
+          <h3>📊 System Info</h3>
+          <div class="info-row">
+            <span class="info-label">ESP32 IP</span>
+            <span class="info-value" id="infoEspIp">{{ esp32_ip }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">ESP32 Status</span>
+            <span class="info-value" id="infoEspStatus">--</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">WiFi Signal</span>
+            <span class="info-value" id="infoRssi">--</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Stream FPS</span>
+            <span class="info-value" id="infoFps">--</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Detect FPS</span>
+            <span class="info-value" id="infoDetectFps">--</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Persons Detected</span>
+            <span class="info-value" id="infoPersons" style="color: #e94560"
+              >0</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">Intruders</span>
+            <span class="info-value" id="infoIntruders" style="color: #e94560"
+              >0</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">Auto Alert</span>
+            <span class="info-value" id="infoAutoAlert" style="color: #4ecca3"
+              >ON</span
+            >
+          </div>
+        </div>
+
+        <!-- YOLO Controls -->
+        <div class="card">
+          <h3>🤖 AI Detection</h3>
+          <div class="btn-group">
+            <button
+              class="btn btn-purple"
+              id="yoloToggleBtn"
+              onclick="toggleYolo()"
+            >
+              🧠 Toggle YOLO ON/OFF
+            </button>
+            <div class="slider-container">
+              <label>
+                <span>Confidence Threshold</span>
+                <span id="confValue">0.45</span>
+              </label>
+              <input
+                type="range"
+                id="confSlider"
+                min="10"
+                max="90"
+                value="45"
+                oninput="updateConfidence(this.value)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Detections List -->
+        <div class="card">
+          <h3>👤 Detected Persons</h3>
+          <div class="detection-list" id="detectionList">
+            <div style="color: #555; text-align: center; padding: 20px">
+              No detections yet
+            </div>
+          </div>
+        </div>
+
+        <!-- Virtual Fence Controls -->
+        <div class="card">
+          <h3>⚠️ Virtual Fence</h3>
+          <div class="btn-group">
+            <button
+              class="btn btn-teal"
+              id="drawFenceBtn"
+              onclick="toggleDrawMode()"
+            >
+              ✏️ Draw Fence
+            </button>
+            <div class="btn-row">
+              <button class="btn btn-warning" onclick="undoLastPoint()">
+                ↩️ Undo
+              </button>
+              <button class="btn btn-outline-danger" onclick="clearFence()">
+                🗑️ Clear
+              </button>
+            </div>
+            <button class="btn btn-primary" onclick="saveFence()">
+              💾 Save Fence
+            </button>
+            <div class="info-row">
+              <span class="info-label">Fence Points</span>
+              <span class="info-value" id="fencePointCount">0</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Fence Status</span>
+              <span class="info-value" id="fenceSavedStatus" style="color: #888"
+                >Not set</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Hardware Controls -->
+        <div class="card">
+          <h3>🎮 Controls</h3>
+          <div class="btn-group">
+            <div class="btn-row">
+              <button class="btn btn-danger" onclick="buzzerOn()">
+                🔔 Buzzer ON
+              </button>
+              <button class="btn btn-success" onclick="buzzerOff()">
+                🔕 Buzzer OFF
+              </button>
+            </div>
+            <button class="btn btn-primary" onclick="takeSnapshot()">
+              📷 Chụp ảnh
+            </button>
+            <button
+              class="btn btn-warning"
+              id="autoAlertBtn"
+              onclick="toggleAutoAlert()"
+            >
+              🚨 Auto Alert: ON
+            </button>
+            <button class="btn btn-purple" onclick="testAlert()">
+              🔊 Test Alert
+            </button>
+          </div>
+        </div>
+
+        <!-- Intrusion History -->
+        <div class="card">
+          <h3>📜 Intrusion History</h3>
+          <div class="log-history" id="logHistory">
+            <div style="color: #555; text-align: center; padding: 20px">
+              No intrusions recorded
+            </div>
+          </div>
+          <div style="margin-top: 8px; display: flex; gap: 8px">
+            <button
+              class="btn btn-primary"
+              style="flex: 1; padding: 6px; font-size: 12px"
+              onclick="loadIntrusionLogs()"
+            >
+              🔄 Refresh
+            </button>
+            <button
+              class="btn btn-outline-danger"
+              style="flex: 1; padding: 6px; font-size: 12px"
+              onclick="clearLogs()"
+            >
+              🗑️ Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="card">
+          <h3>📋 Activity Log</h3>
+          <div class="log-area" id="logArea">
+            <div class="log-entry">
+              <span class="log-time">[--:--:--]</span>
+              <span class="log-info">System ready.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ===================== LOGGING =====================
+      function addLog(message, type = "info") {
+        const logArea = document.getElementById("logArea");
+        const now = new Date().toLocaleTimeString("vi-VN");
+        const div = document.createElement("div");
+        div.className = "log-entry";
+        div.innerHTML = `<span class="log-time">[${now}]</span> <span class="log-${type}">${message}</span>`;
+        logArea.insertBefore(div, logArea.firstChild);
+        while (logArea.children.length > 50)
+          logArea.removeChild(logArea.lastChild);
+      }
+
+      // ===================== FENCE DRAWING =====================
+      let drawMode = false;
+      let fencePoints = []; // Tọa độ chuẩn hóa [0-1]
+      const fenceCanvas = document.getElementById("fenceCanvas");
+      const fenceCtx = fenceCanvas.getContext("2d");
+
+      function resizeCanvas() {
+        const img = document.getElementById("videoFeed");
+        let nW = img.naturalWidth || 640;
+        let nH = img.naturalHeight || 480;
+
+        let imgRatio = nW / nH;
+        let boxRatio = img.clientWidth / img.clientHeight;
+
+        let drawW, drawH;
+        if (boxRatio > imgRatio) {
+          drawH = img.clientHeight;
+          drawW = drawH * imgRatio;
+        } else {
+          drawW = img.clientWidth;
+          drawH = drawW / imgRatio;
+        }
+
+        fenceCanvas.width = drawW;
+        fenceCanvas.height = drawH;
+        fenceCanvas.style.width = drawW + "px";
+        fenceCanvas.style.height = drawH + "px";
+
+        let padX = (img.clientWidth - drawW) / 2;
+        let padY = (img.clientHeight - drawH) / 2;
+        fenceCanvas.style.left = padX + "px";
+        fenceCanvas.style.top = padY + "px";
+
+        drawFenceOverlay();
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+      // Resize khi video load
+      document
+        .getElementById("videoFeed")
+        .addEventListener("load", resizeCanvas);
+      setTimeout(resizeCanvas, 500);
+
+      function toggleDrawMode() {
+        drawMode = !drawMode;
+        const btn = document.getElementById("drawFenceBtn");
+        const status = document.getElementById("fenceStatus");
+        if (drawMode) {
+          btn.className = "btn active-draw";
+          btn.textContent = "⏹️ Stop Drawing";
+          fenceCanvas.className = "drawing";
+          status.className = "fence-status active";
+          addLog("Fence Draw Mode: ON — Click on video to add points", "warn");
+        } else {
+          btn.className = "btn btn-teal";
+          btn.textContent = "✏️ Draw Fence";
+          fenceCanvas.className = "";
+          status.className = "fence-status";
+          addLog("Fence Draw Mode: OFF", "info");
+        }
+      }
+
+      fenceCanvas.addEventListener("click", function (e) {
+        if (!drawMode) return;
+        const rect = fenceCanvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        fencePoints.push([x, y]);
+        document.getElementById("fencePointCount").textContent =
+          fencePoints.length;
+        drawFenceOverlay();
+        addLog(
+          `Fence point ${fencePoints.length}: (${(x * 100).toFixed(1)}%, ${(y * 100).toFixed(1)}%)`,
+          "info",
+        );
+      });
+
+      function drawFenceOverlay() {
+        const w = fenceCanvas.width;
+        const h = fenceCanvas.height;
+        fenceCtx.clearRect(0, 0, w, h);
+
+        if (fencePoints.length === 0) return;
+
+        // Vẽ vùng fill bán trong suốt
+        if (fencePoints.length >= 3) {
+          fenceCtx.beginPath();
+          fenceCtx.moveTo(fencePoints[0][0] * w, fencePoints[0][1] * h);
+          for (let i = 1; i < fencePoints.length; i++) {
+            fenceCtx.lineTo(fencePoints[i][0] * w, fencePoints[i][1] * h);
+          }
+          fenceCtx.closePath();
+          fenceCtx.fillStyle = "rgba(233, 69, 96, 0.2)";
+          fenceCtx.fill();
+        }
+
+        // Vẽ các cạnh
+        fenceCtx.beginPath();
+        fenceCtx.moveTo(fencePoints[0][0] * w, fencePoints[0][1] * h);
+        for (let i = 1; i < fencePoints.length; i++) {
+          fenceCtx.lineTo(fencePoints[i][0] * w, fencePoints[i][1] * h);
+        }
+        if (fencePoints.length >= 3) fenceCtx.closePath();
+        fenceCtx.strokeStyle = "#e94560";
+        fenceCtx.lineWidth = 2;
+        fenceCtx.setLineDash([6, 3]);
+        fenceCtx.stroke();
+        fenceCtx.setLineDash([]);
+
+        // Vẽ các điểm vertex
+        fencePoints.forEach((pt, i) => {
+          fenceCtx.beginPath();
+          fenceCtx.arc(pt[0] * w, pt[1] * h, 5, 0, Math.PI * 2);
+          fenceCtx.fillStyle = i === 0 ? "#4ecca3" : "#f59e0b";
+          fenceCtx.fill();
+          fenceCtx.strokeStyle = "#fff";
+          fenceCtx.lineWidth = 1;
+          fenceCtx.stroke();
+
+          // Số thứ tự điểm
+          fenceCtx.fillStyle = "#fff";
+          fenceCtx.font = "10px Arial";
+          fenceCtx.fillText(String(i + 1), pt[0] * w + 8, pt[1] * h - 5);
+        });
+      }
+
+      function undoLastPoint() {
+        if (fencePoints.length > 0) {
+          fencePoints.pop();
+          document.getElementById("fencePointCount").textContent =
+            fencePoints.length;
+          drawFenceOverlay();
+          addLog("Undo last fence point", "info");
+        }
+      }
+
+      function clearFence() {
+        fencePoints = [];
+        document.getElementById("fencePointCount").textContent = "0";
+        document.getElementById("fenceSavedStatus").textContent = "Not set";
+        document.getElementById("fenceSavedStatus").style.color = "#888";
+        drawFenceOverlay();
+        // Xóa trên server
+        fetch("/api/fence/clear").then(() => addLog("Fence cleared", "warn"));
+      }
+
+      async function saveFence() {
+        if (fencePoints.length < 3) {
+          addLog("Need at least 3 points for a fence polygon!", "error");
+          return;
+        }
+        try {
+          const res = await fetch("/api/fence/set", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ points: fencePoints }),
+          });
+          const data = await res.json();
+          if (data.status === "ok") {
+            addLog(
+              `Fence saved: ${data.points} points → RESTRICTED ZONE active`,
+              "info",
+            );
+            document.getElementById("fenceSavedStatus").textContent =
+              `Active (${data.points} pts)`;
+            document.getElementById("fenceSavedStatus").style.color = "#e94560";
+            // Tắt draw mode sau khi save
+            if (drawMode) toggleDrawMode();
+          } else {
+            addLog("Fence save failed: " + (data.error || "Unknown"), "error");
+          }
+        } catch (e) {
+          addLog("Fence save error: " + e.message, "error");
+        }
+      }
+
+      // Load fence từ server khi mở trang
+      async function loadFence() {
+        try {
+          const res = await fetch("/api/fence/get");
+          const data = await res.json();
+          if (data.points && data.points.length >= 3) {
+            fencePoints = data.points;
+            document.getElementById("fencePointCount").textContent =
+              fencePoints.length;
+            document.getElementById("fenceSavedStatus").textContent =
+              `Active (${fencePoints.length} pts)`;
+            document.getElementById("fenceSavedStatus").style.color = "#e94560";
+            drawFenceOverlay();
+            addLog(
+              `Loaded existing fence: ${fencePoints.length} points`,
+              "info",
+            );
+          }
+        } catch (e) {
+          /* no fence saved */
+        }
+      }
+
+      // ===================== STATUS REFRESH =====================
+      let lastPersonCount = 0;
+      let lastIntrusionCount = 0;
+      let alertAudioPlaying = false;
+
+      // Đã tắt âm thanh cảnh báo trên trình duyệt (Laptop), chỉ dùng còi trên ESP32
+      function playAlertSound() {
+        // Tắt code tạo âm thanh oscillator để laptop không kêu nữa
+        /*
+        if (alertAudioPlaying) return;
+        alertAudioPlaying = true;
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          // Beep 3 lần
+          [0, 0.3, 0.6].forEach((delay) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 880;
+            osc.type = "square";
+            gain.gain.value = 0.3;
+            osc.start(ctx.currentTime + delay);
+            osc.stop(ctx.currentTime + delay + 0.2);
+          });
+          setTimeout(() => {
+            alertAudioPlaying = false;
+          }, 1500);
+        } catch (e) {
+          alertAudioPlaying = false;
+        }
+        */
+      }
+
+      async function refreshStatus() {
+        try {
+          const res = await fetch("/api/status");
+          const data = await res.json();
+
+          // Connection status
+          const dot = document.getElementById("espStatusDot");
+          const text = document.getElementById("espStatusText");
+          if (data.esp32_connected) {
+            dot.className = "status-dot connected";
+            text.textContent = "Connected";
+            document.getElementById("infoEspStatus").textContent = "Online";
+          } else {
+            dot.className = "status-dot disconnected";
+            text.textContent = "Disconnected";
+            document.getElementById("infoEspStatus").textContent = "Offline";
+          }
+
+          // FPS info
+          document.getElementById("infoFps").textContent =
+            data.stream_fps + " FPS";
+          document.getElementById("fpsBadge").textContent =
+            data.stream_fps + " FPS";
+          document.getElementById("fpsText").textContent =
+            data.stream_fps + " FPS";
+
+          // YOLO info
+          const detectFps = data.detect_fps || 0;
+          document.getElementById("infoDetectFps").textContent =
+            detectFps + " FPS";
+          document.getElementById("detectFpsBadge").textContent =
+            "Detect: " + detectFps;
+
+          const yoloBadge = document.getElementById("yoloBadge");
+          if (data.yolo_enabled) {
+            yoloBadge.className = "yolo-badge on";
+            yoloBadge.textContent = "YOLO ON";
+          } else {
+            yoloBadge.className = "yolo-badge off";
+            yoloBadge.textContent = "YOLO OFF";
+          }
+
+          // Person count
+          const pCount = data.person_count || 0;
+          document.getElementById("infoPersons").textContent = pCount;
+          const personBadge = document.getElementById("personBadge");
+          personBadge.textContent = pCount;
+          personBadge.className =
+            pCount > 0 ? "person-count-badge" : "person-count-badge zero";
+
+          // Intrusion count + alert
+          const iCount = data.intrusion_count || 0;
+          document.getElementById("infoIntruders").textContent = iCount;
+          const intrusionBadge = document.getElementById("intrusionBadge");
+          intrusionBadge.textContent = iCount;
+          intrusionBadge.className =
+            iCount > 0 ? "intrusion-badge" : "intrusion-badge zero";
+
+          // Alert banner
+          const alertBanner = document.getElementById("alertBanner");
+          if (iCount > 0) {
+            alertBanner.className = "alert-banner active";
+            if (iCount !== lastIntrusionCount && iCount > 0) {
+              playAlertSound();
+              addLog(
+                `⚠️ INTRUSION! ${iCount} person(s) in restricted zone!`,
+                "error",
+              );
+              // Refresh log history khi có xâm nhập mới
+              loadIntrusionLogs();
+            }
+          } else {
+            alertBanner.className = "alert-banner";
+          }
+          lastIntrusionCount = iCount;
+
+          // Auto alert status
+          const autoAlertEnabled = data.auto_alert_enabled !== false;
+          document.getElementById("infoAutoAlert").textContent =
+            autoAlertEnabled ? "ON" : "OFF";
+          document.getElementById("infoAutoAlert").style.color =
+            autoAlertEnabled ? "#4ecca3" : "#e94560";
+          const aaBtn = document.getElementById("autoAlertBtn");
+          aaBtn.textContent =
+            "🚨 Auto Alert: " + (autoAlertEnabled ? "ON" : "OFF");
+
+          // Log new detections
+          if (pCount > 0 && pCount !== lastPersonCount) {
+            addLog(`Detected ${pCount} person(s)`, "warn");
+          }
+          lastPersonCount = pCount;
+
+          // Detection list with intrusion status
+          const detList = document.getElementById("detectionList");
+          if (data.detections && data.detections.length > 0) {
+            detList.innerHTML = data.detections
+              .map((d, i) => {
+                const isOwner = d.is_owner || false;
+                const icon = isOwner ? "🏠" : "👤";
+                const badge = isOwner ? " ✅" : (d.intruding ? " ⚠️" : "");
+                const borderStyle = isOwner
+                  ? "border-left:3px solid #38bdf8;"
+                  : (d.intruding ? "border-left:3px solid #e94560;" : "");
+                const statusText = isOwner
+                  ? "OWNER"
+                  : (d.intruding ? "STRANGER" : "safe");
+                const statusColor = isOwner
+                  ? "#38bdf8"
+                  : (d.intruding ? "#e94560" : "#888");
+                const nameLabel = isOwner ? "Owner" : `Person ${i + 1}`;
+                return `
+                            <div class="detection-item" style="${borderStyle}">
+                                <span>${icon} ${nameLabel}${badge}</span>
+                                <span class="detection-conf">${(d.confidence * 100).toFixed(0)}%</span>
+                                <span style="color:${statusColor};font-size:11px;font-weight:bold">${statusText}</span>
+                            </div>
+                        `;
+              })
+              .join("");
+          } else {
+            detList.innerHTML =
+              '<div style="color:#555;text-align:center;padding:10px;">No persons detected</div>';
+          }
+
+          // ESP32 details
+          if (data.esp32_status) {
+            document.getElementById("infoRssi").textContent =
+              data.esp32_status.rssi + " dBm";
+          }
+        } catch (e) {
+          // Silent fail on status refresh
+        }
+      }
+
+      // ===================== YOLO CONTROLS =====================
+      async function toggleYolo() {
+        try {
+          const res = await fetch("/api/yolo/toggle");
+          const data = await res.json();
+          const state = data.yolo_enabled ? "ON" : "OFF";
+          addLog(
+            `YOLO Detection: ${state}`,
+            data.yolo_enabled ? "info" : "warn",
+          );
+          refreshStatus();
+        } catch (e) {
+          addLog("Toggle YOLO failed: " + e.message, "error");
+        }
+      }
+
+      async function updateConfidence(val) {
+        const conf = val / 100;
+        document.getElementById("confValue").textContent = conf.toFixed(2);
+        try {
+          await fetch(`/api/yolo/confidence/${conf}`);
+        } catch (e) {
+          // Silent fail
+        }
+      }
+
+      // ===================== HARDWARE CONTROLS =====================
+      async function buzzerOn() {
+        try {
+          await fetch("/api/esp32/buzzer/on");
+          addLog("Buzzer ON", "warn");
+        } catch (e) {
+          addLog("Buzzer ON failed", "error");
+        }
+      }
+
+      async function buzzerOff() {
+        try {
+          await fetch("/api/esp32/buzzer/off");
+          addLog("Buzzer OFF", "info");
+        } catch (e) {
+          addLog("Buzzer OFF failed", "error");
+        }
+      }
+
+      function takeSnapshot() {
+        window.open("/api/snapshot", "_blank");
+        addLog("Snapshot captured", "info");
+      }
+
+      // ===================== AUTO ALERT =====================
+      async function toggleAutoAlert() {
+        try {
+          const res = await fetch("/api/alert/toggle");
+          const data = await res.json();
+          const state = data.auto_alert_enabled ? "ON" : "OFF";
+          addLog(
+            `Auto Alert: ${state}`,
+            data.auto_alert_enabled ? "info" : "warn",
+          );
+          refreshStatus();
+        } catch (e) {
+          addLog("Toggle auto alert failed", "error");
+        }
+      }
+
+      async function testAlert() {
+        try {
+          await fetch("/api/alert/test");
+          addLog("Alert test: Buzzer triggered", "warn");
+        } catch (e) {
+          addLog("Alert test failed", "error");
+        }
+      }
+
+      // ===================== INTRUSION LOG HISTORY =====================
+      async function loadIntrusionLogs() {
+        try {
+          const res = await fetch("/api/logs");
+          const data = await res.json();
+          const container = document.getElementById("logHistory");
+
+          if (data.logs && data.logs.length > 0) {
+            container.innerHTML = data.logs
+              .map((log) => {
+                const imageLink = log.image
+                  ? `<a href="/api/logs/image/${encodeURIComponent(log.image)}" target="_blank">🖼️ View</a>`
+                  : "";
+                return `
+                            <div class="log-history-item">
+                                <span class="log-h-time">${log.time}</span>
+                                <span class="log-h-count">🚨 ${log.count} intruder(s)</span>
+                                ${imageLink}
+                            </div>
+                        `;
+              })
+              .join("");
+          } else {
+            container.innerHTML =
+              '<div style="color:#555;text-align:center;padding:10px;">No intrusions recorded</div>';
+          }
+        } catch (e) {
+          // Silent fail
+        }
+      }
+
+      async function clearLogs() {
+        if (!confirm("Xóa toàn bộ lịch sử xâm nhập?")) return;
+        try {
+          await fetch("/api/logs/clear");
+          addLog("Intrusion logs cleared", "warn");
+          loadIntrusionLogs();
+        } catch (e) {
+          addLog("Clear logs failed", "error");
+        }
+      }
+
+      // ===================== AUTO REFRESH =====================
+      setInterval(refreshStatus, 2000);
+      refreshStatus();
+      loadFence();
+      loadIntrusionLogs();
+      addLog("Dashboard loaded. YOLO Detection active.", "info");
+    </script>
+  </body>
+</html>
