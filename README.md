@@ -1,22 +1,22 @@
-# 🛡️ SENTINEL-EYE
+# SENTINEL-EYE
 
 > **AI-Powered Smart Security Surveillance System with Virtual Fence**  
 > Kết hợp IoT (ESP32-CAM) và Trí tuệ Nhân tạo (YOLOv8) để giám sát và cảnh báo an ninh thời gian thực.
 
 ---
 
-## 🌟 Tính Năng Nổi Bật
+## Tính Năng Nổi Bật
 
-- 📹 **Live Video Streaming**: Truyền phát video MJPEG trực tiếp từ camera ESP32-CAM qua WiFi.
-- 🧠 **AI Detection**: Nhận diện người theo thời gian thực sử dụng mô hình YOLOv8.
-- 🚧 **Virtual Fence (Hàng rào ảo)**: Cho phép vẽ các vùng cấm đa giác tùy chỉnh trực tiếp trên giao diện web.
-- 🚨 **Hệ Thống Cảnh Báo**: Tự động kích hoạt còi báo động (Active Buzzer trên GPIO 12 của ESP32) cùng âm thanh/hình ảnh trên Dashboard khi có xâm nhập.
-- 📝 **Intrusion Logging**: Tự động ghi lại nhật ký xâm nhập và chụp ảnh bằng chứng lưu trữ an toàn.
-- 📊 **Web Dashboard**: Giao diện điều khiển trực quan, hiện đại và thân thiện với người dùng.
+- **Live Video Streaming**: Truyền phát video MJPEG trực tiếp từ camera ESP32-CAM qua WiFi.
+- **AI Detection**: Nhận diện người theo thời gian thực sử dụng mô hình YOLOv8.
+- **Virtual Fence (Hàng rào ảo)**: Cho phép vẽ các vùng cấm đa giác tùy chỉnh trực tiếp trên giao diện web.
+- **Hệ Thống Cảnh Báo**: Tự động kích hoạt còi báo động (Active Buzzer trên GPIO 12 của ESP32) cùng âm thanh/hình ảnh trên Dashboard khi có xâm nhập.
+- **Intrusion Logging**: Tự động ghi lại nhật ký xâm nhập và chụp ảnh bằng chứng lưu trữ an toàn.
+- **Web Dashboard**: Giao diện điều khiển trực quan, hiện đại và thân thiện với người dùng.
 
 ---
 
-## 🏗️ Kiến Trúc Hệ Thống
+## Kiến Trúc Hệ Thống
 
 ```text
 ┌─────────────────────┐    WiFi/HTTP     ┌──────────────────────┐    HTTP     ┌──────────────┐
@@ -32,7 +32,7 @@
 
 ---
 
-## 📁 Cấu Trúc Dự Án
+## Cấu Trúc Dự Án
 
 ```
 SENTINEL-EYE/
@@ -53,7 +53,7 @@ SENTINEL-EYE/
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy
+## Hướng Dẫn Cài Đặt & Khởi Chạy
 
 ### 1. Nạp Firmware cho ESP32-CAM
 1. Mở thư mục `HCL/HCI_Camera_Test` trong **VS Code** với extension **PlatformIO**.
@@ -81,7 +81,7 @@ SENTINEL-EYE/
 
 ---
 
-## 📖 Tài Liệu Tham Khảo
+## Tài Liệu Tham Khảo
 - [Báo Cáo Dự Án](HCL/B%C3%81O_C%C3%81O_D%E1%BB%B0_%C3%81N.md)
 - [Hướng Dẫn Sử Dụng Chi Tiết](HCL/H%C6%AF%E1%BB%9ANG_D%E1%BA%AAN_S%E1%BB%AC_D%E1%BB%A4NG.md)
 - [Hướng Dẫn Fine-Tuning YOLO](HCL/fine_tuning/HUONG_DAN_FINE_TUNING.md)
